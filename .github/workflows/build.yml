@@ -1,0 +1,50 @@
+# Builds WinWipeHelper.exe. A tag (v*) creates a GitHub release with the EXE attached,
+# after the "release" environment approves it (Settings > Environments > release > Required reviewers).
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build
+        shell: pwsh
+        run: ./build.ps1
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: WinWipeHelper
+          path: artifacts/WinWipeHelper.exe
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: windows-latest
+    environment: release
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: WinWipeHelper
+      - name: Attach WinWipeHelper.exe to the release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$env:GITHUB_REF_NAME" WinWipeHelper.exe --repo "$env:GITHUB_REPOSITORY" --title "WinWipeHelper $env:GITHUB_REF_NAME" --generate-notes

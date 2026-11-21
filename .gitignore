@@ -1,0 +1,7 @@
+bin/
+obj/
+artifacts/
+logs/
+*.user
+.vs/
+sandbox/WinWipeHelper.local.wsb

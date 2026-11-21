@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Version B: "WinWipeHelper", the shareable build. Core only: Install apps + Back up / restore files. -->
+  <PropertyGroup>
+    <AssemblyName>WinWipeHelper</AssemblyName>
+    <RootNamespace>WinWipeHelper</RootNamespace>
+    <Product>WinWipeHelper</Product>
+    <AssemblyTitle>WinWipeHelper</AssemblyTitle>
+    <Description>Reinstall helper: install apps with winget and back up / restore your files.</Description>
+  </PropertyGroup>
+
+  <Import Project="..\Core\Core.projitems" Label="Shared" />
+
+  <ItemGroup>
+    <Compile Include="Edition.cs" />
+    <EmbeddedResource Include="apps.json" LogicalName="WinWipeHelper.apps.json" />
+  </ItemGroup>
+</Project>

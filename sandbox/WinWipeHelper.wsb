@@ -1,0 +1,21 @@
+<!--
+  Windows Sandbox config: a genuinely fresh Windows with the build output mapped in.
+  Windows Sandbox needs an absolute HostFolder, so don't edit this template by hand:
+  run  .\sandbox\make-wsb.ps1  which writes sandbox\WinWipeHelper.local.wsb with this PC's path and opens it.
+-->
+<Configuration>
+  <VGpu>Disable</VGpu>
+  <Networking>Enable</Networking>
+  <MemoryInMB>4096</MemoryInMB>
+  <ClipboardRedirection>Enable</ClipboardRedirection>
+  <MappedFolders>
+    <MappedFolder>
+      <HostFolder>__BUILD_FOLDER__</HostFolder>
+      <SandboxFolder>C:\Users\WDAGUtilityAccount\Desktop\build</SandboxFolder>
+      <ReadOnly>true</ReadOnly>
+    </MappedFolder>
+  </MappedFolders>
+  <LogonCommand>
+    <Command>cmd.exe /c robocopy C:\Users\WDAGUtilityAccount\Desktop\build C:\Users\WDAGUtilityAccount\Desktop\WinWipeHelper /E /NFL /NDL /NJH /NJS &amp; start "" explorer.exe C:\Users\WDAGUtilityAccount\Desktop\WinWipeHelper</Command>
+  </LogonCommand>
+</Configuration>
