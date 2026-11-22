@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -24,6 +24,9 @@ namespace WinWipeHelper
         readonly Label _sourceLabel = new Label { AutoSize = true, Margin = new Padding(12, 9, 0, 0), ForeColor = Color.DimGray };
         readonly ComboBox _category = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 230, Margin = new Padding(0, 4, 6, 3) };
         readonly CheckBox _dryRun = new CheckBox { Text = "Dry run (show the commands, don't run them)", AutoSize = true, Margin = new Padding(0, 9, 16, 3) };
+        readonly CheckBox _webIcons = new CheckBox { Text = "Icons from app websites", AutoSize = true, Margin = new Padding(8, 9, 0, 3) };
+        readonly ToolTip _tips = new ToolTip();
+        readonly IconLoader _icons;
         readonly ProgressBar _bar = new ProgressBar { Dock = DockStyle.Fill, Height = 20, Margin = new Padding(0, 4, 0, 2) };
         readonly Label _status = new Label { AutoSize = true, ForeColor = Color.DimGray, Margin = new Padding(0, 0, 0, 2) };
         readonly TextBox _logBox = Ui.LogBox();
@@ -37,7 +40,15 @@ namespace WinWipeHelper
             var export = Ui.Button("Export list", (s, e) => ExportList());
             var scan = Ui.Button("Scan this PC...", (s, e) => ScanPc());
             var office = Ui.Button("Office options...", (s, e) => EditOffice());
-            var toolbar = Ui.Flow(load, export, scan, office, _sourceLabel);
+            _webIcons.Checked = Settings.Current.WebIcons;
+            _tips.SetToolTip(_webIcons, "Apps that are already installed show their own icon.\nFor the others, download the icon from the app's own website (saved, so only once).\nUntick to never go online for icons.");
+            _webIcons.CheckedChanged += (s, e) =>
+            {
+                Settings.Current.WebIcons = _webIcons.Checked;
+                Settings.Current.Save();
+                if (_webIcons.Checked) _icons.Refresh(webOnly: true);
+            };
+            var toolbar = Ui.Flow(load, export, scan, office, _webIcons, _sourceLabel);
 
             var searchRow = new TableLayoutPanel { ColumnCount = 2, AutoSize = true, Dock = DockStyle.Fill };
             searchRow.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
@@ -58,6 +69,8 @@ namespace WinWipeHelper
 
 
             _tree.Margin = new Padding(0, 4, 0, 4);
+            _icons = new IconLoader(_tree, l => _tree.ImageList = l);
+            _icons.Changed += () => _tree.Invalidate();
             var root = Ui.Rows((toolbar, false), (searchRow, false), (_tree, true), (_note, false), (selRow, false), (goRow, false), (_status, false), (_bar, false), (_logBox, false));
             Controls.Add(root);
 
@@ -101,12 +114,19 @@ namespace WinWipeHelper
                 var items = _list.Apps.Where(a => string.Equals(a.Category, cat, StringComparison.OrdinalIgnoreCase) && Matches(a, filter)).ToList();
                 if (items.Count == 0) continue;
                 var parent = _tree.Nodes.Add(cat);
+                parent.ImageIndex = parent.SelectedImageIndex = IconLoader.NoIcon;
                 foreach (var a in items)
                 {
                     var label = a.Name + (string.IsNullOrEmpty(a.Note) && a.Kind != AppKind.Office ? "" : "  *");
                     if (a.Kind == AppKind.Office && a.Office != null) label = $"{a.Name}  ({a.Office.ProductLabel}: {string.Join(", ", a.Office.Apps)})";
                     var n = parent.Nodes.Add(label);
                     n.Tag = a;
+                    var item = a;
+                    n.ImageIndex = n.SelectedImageIndex = _icons.Add(new IconLoader.Request
+                    {
+                        Key = "app|" + a.Id, Name = a.Name, Homepage = InstalledIcons.HomepageOf(a),
+                        FindInstalled = () => InstalledIcons.Shared.Find(item),
+                    });
                     n.ToolTipText = a.Describe();
                     n.Checked = _ticks.TryGetValue(a.Id, out var t) && t;
                 }
@@ -258,6 +278,7 @@ namespace WinWipeHelper
                     List<InstallResult> results = t.Status == TaskStatus.RanToCompletion ? t.Result : new List<InstallResult>();
                     if (t.Exception != null) log.Error(t.Exception.GetBaseException().ToString());
                     var failed = results.Where(r => !r.Ok).ToList();
+                    if (!dry && results.Count > failed.Count) { InstalledIcons.Reset(); _icons.Refresh(); }
                     log.Write($"\n==== {(dry ? "Dry run" : "Done")}: {results.Count - failed.Count} of {results.Count} OK ====");
                     foreach (var f in failed) log.Write($"  FAILED  {f.App}: {f.Detail}");
                     log.Write("Log file: " + log.FilePath);

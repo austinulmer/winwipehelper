@@ -29,6 +29,7 @@ namespace WinWipeHelper
         List<ScanItem> _items = new List<ScanItem>();
         CancellationTokenSource _cts;
         bool _filling;
+        readonly IconLoader _icons;
 
         public AppList Result { get; private set; }
         public string SavedPath { get; private set; }
@@ -46,6 +47,14 @@ namespace WinWipeHelper
             intro.MaximumSize = new Size(1150, 0);
 
             SetupGrid();
+            _icons = new IconLoader(_grid);
+            _icons.Updated += (key, index) =>
+            {
+                _filling = true;
+                foreach (DataGridViewRow row in _grid.Rows)
+                    if (row.Tag is ScanItem it && IconKey(it) == key) row.Cells["icon"].Value = _icons.ImageFor(key);
+                _filling = false;
+            };
             foreach (ScanCategory c in Enum.GetValues(typeof(ScanCategory)))
             {
                 var cb = new CheckBox { Text = ScanItem.CategoryLabel(c), AutoSize = true, Checked = c != ScanCategory.Runtime && c != ScanCategory.Windows, Margin = new Padding(0, 7, 10, 3) };
@@ -89,6 +98,10 @@ namespace WinWipeHelper
             _grid.BorderStyle = BorderStyle.FixedSingle;
             _grid.EditMode = DataGridViewEditMode.EditOnKeystrokeOrF2;
             _grid.Columns.Add(new DataGridViewCheckBoxColumn { Name = "inc", HeaderText = "", Width = 30, AutoSizeMode = DataGridViewAutoSizeColumnMode.None });
+            var icon = new DataGridViewImageColumn { Name = "icon", HeaderText = "", Width = 28, AutoSizeMode = DataGridViewAutoSizeColumnMode.None, ReadOnly = true, ImageLayout = DataGridViewImageCellLayout.Normal };
+            icon.DefaultCellStyle.NullValue = null;   // no red "missing image" cross while loading
+            icon.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            _grid.Columns.Add(icon);
             _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "name", HeaderText = "Name", FillWeight = 26 });
             _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "id", HeaderText = "Winget ID (editable)", FillWeight = 22 });
             _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "match", HeaderText = "Match", FillWeight = 16, ReadOnly = true });
@@ -170,9 +183,13 @@ namespace WinWipeHelper
             _filling = true;
             _grid.SuspendLayout();
             _grid.Rows.Clear();
+            _grid.Columns["icon"].Width = _icons.IconSize + 12;
             foreach (var it in VisibleItems())
             {
-                int idx = _grid.Rows.Add(it.Include, it.Name, it.WingetId, it.Match, ScanItem.CategoryLabel(it.Category), it.Sources,
+                var item = it;
+                var key = IconKey(it);
+                _icons.Add(new IconLoader.Request { Key = key, Name = it.Name, Homepage = it.Homepage, FindInstalled = () => InstalledIcons.Find(item) });
+                int idx = _grid.Rows.Add(it.Include, _icons.ImageFor(key), it.Name, it.WingetId, it.Match, ScanItem.CategoryLabel(it.Category), it.Sources,
                     string.Join("; ", new[] { it.Flag, it.Launcher != null ? "reinstall from " + it.Launcher : null, it.Homepage }.Where(x => !string.IsNullOrEmpty(x))));
                 var row = _grid.Rows[idx];
                 row.Tag = it;
@@ -183,6 +200,8 @@ namespace WinWipeHelper
             foreach (var kv in _show) kv.Value.Text = $"{ScanItem.CategoryLabel(kv.Key)} ({_items.Count(i => i.Category == kv.Key)})";
             _status.Text = $"{_items.Count} programs found, {_items.Count(i => i.Include)} ticked. Runtimes and Windows components are hidden until you tick them above.";
         }
+
+        static string IconKey(ScanItem it) => "scan|" + (it.WingetId ?? "") + "|" + Names.Normalize(it.Name);
 
         static void Colorize(DataGridViewRow row, ScanItem it)
         {

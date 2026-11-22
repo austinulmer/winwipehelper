@@ -63,6 +63,7 @@ namespace WinWipeHelper
         public string Category;
         [JsonAlways] public bool Default;
         public string Note;
+        public string Homepage;         // the app's own website (its icon is shown when the app isn't installed)
         public bool User;               // install as the logged-in user without elevation
         public string Override;         // winget --override arguments
         public string Kind = AppKind.Winget;

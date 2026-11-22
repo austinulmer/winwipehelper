@@ -10,6 +10,12 @@ namespace WinWipeHelper
     {
         int _dpi = 96;
 
+        /// <summary>The window's DPI right now (96 = 100%).</summary>
+        public int CurrentDpi => _dpi;
+
+        /// <summary>Raised after the window moved to a monitor with a different DPI and was rescaled.</summary>
+        public event EventHandler DpiSwitched;
+
         public BaseForm()
         {
             Font = new Font("Segoe UI", 9f);
@@ -51,6 +57,7 @@ namespace WinWipeHelper
                     Scale(new SizeF(f, f));
                     ResumeLayout(true);
                     SetBounds(r.Left, r.Top, r.Right - r.Left, r.Bottom - r.Top);
+                    DpiSwitched?.Invoke(this, EventArgs.Empty);
                 }
                 m.Result = IntPtr.Zero;
                 return;

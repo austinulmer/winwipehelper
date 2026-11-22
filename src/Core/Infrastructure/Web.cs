@@ -37,6 +37,38 @@ namespace WinWipeHelper
                 return r.ReadToEnd();
         }
 
+        /// <summary>A small download kept in memory (refuses anything over maxBytes). finalUrl is where redirects ended.</summary>
+        public static byte[] GetBytes(string url, int maxBytes, int timeoutMs, out Uri finalUrl, string accept = null)
+        {
+            var req = (HttpWebRequest)WebRequest.Create(url);
+            req.UserAgent = BrowserAgent;
+            req.Timeout = timeoutMs;
+            req.ReadWriteTimeout = timeoutMs;
+            req.AllowAutoRedirect = true;
+            req.MaximumAutomaticRedirections = 6;
+            req.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+            req.Accept = accept ?? "image/avif,image/png,image/x-icon,image/*;q=0.8,*/*;q=0.5";
+            using (var resp = (HttpWebResponse)req.GetResponse())
+            using (var src = resp.GetResponseStream())
+            using (var ms = new MemoryStream())
+            {
+                finalUrl = resp.ResponseUri;
+                if (resp.ContentLength > maxBytes) throw new InvalidDataException("Too big: " + resp.ContentLength);
+                var buf = new byte[1 << 15];
+                int n;
+                while ((n = src.Read(buf, 0, buf.Length)) > 0)
+                {
+                    if (ms.Length + n > maxBytes)
+                    {
+                        if (accept != null && accept.StartsWith("text/")) { ms.Write(buf, 0, (int)Math.Max(0, maxBytes - ms.Length)); break; }   // a page: the head is enough
+                        throw new InvalidDataException("Too big");
+                    }
+                    ms.Write(buf, 0, n);
+                }
+                return ms.ToArray();
+            }
+        }
+
         /// <summary>Downloads a file. Returns the final file name the server suggested (if any).</summary>
         public static void Download(string url, string outPath, Action<long, long> progress = null, CancellationToken cancel = default)
         {

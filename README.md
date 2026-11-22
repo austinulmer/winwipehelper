@@ -31,6 +31,7 @@ Windows remembers this for that file. If you'd rather not trust a download, buil
 - **Microsoft Office**: choose the license type (Microsoft 365 Personal/Family, Business, Apps for enterprise, Office 2024 Home, Office 2024 Home & Business) and which apps you want. It installs through Microsoft's **Office Deployment Tool**, and you activate by signing in to Office.
 - **No winget yet?** On a fresh PC (or Windows Sandbox) WinWipeHelper repairs or installs winget itself, **without the Microsoft Store**. First it re-registers the App Installer that ships with Windows. If that doesn't work, it downloads App Installer from Microsoft's official [winget-cli releases](https://github.com/microsoft/winget-cli/releases) and checks the signatures first.
 - At the end you get a summary and a page of links for things that can't be automated, such as graphics drivers.
+- **Icons** next to each app: apps that are already installed show their own icon. For the others, WinWipeHelper downloads the icon from the app's own website (its `homepage`; for GitHub projects, the owner's avatar) and keeps it in `%LOCALAPPDATA%\WinWipeHelper\icons`, so each site is asked only once. Untick **Icons from app websites** to never go online for icons; apps without an icon get a colored letter instead.
 
 ### Your own app list (`apps.json`)
 
@@ -45,7 +46,7 @@ The built-in list is a starter set of popular apps, all unticked except 7-Zip an
   "version": 1,
   "categories": ["Essentials", "Media"],
   "apps": [
-    { "id": "7zip.7zip", "name": "7-Zip", "category": "Essentials", "default": true },
+    { "id": "7zip.7zip", "name": "7-Zip", "category": "Essentials", "default": true, "homepage": "https://7-zip.org" },
     { "id": "Spotify.Spotify", "name": "Spotify", "category": "Media", "default": false, "user": true,
       "note": "Installed as your normal user." },
     { "id": "Microsoft.VisualStudio.2022.BuildTools", "name": "VS Build Tools", "category": "Development",
@@ -70,6 +71,7 @@ The built-in list is a starter set of popular apps, all unticked except 7-Zip an
 | `user` | install as the logged-in user, without admin |
 | `override` | passed to the installer with `winget --override` |
 | `kind` | `winget` (default), `download` or `office` |
+| `homepage` | the app's website; its icon is shown while the app isn't installed (`tools/fill-homepages.ps1` fills it in from winget) |
 | `url`, `fileName`, `signer` | download-only items: where from, what to call it, and who must have signed it |
 | `github`, `assetPattern` | take the newest release asset of `owner/repo` whose name matches the pattern (a regular expression) |
 

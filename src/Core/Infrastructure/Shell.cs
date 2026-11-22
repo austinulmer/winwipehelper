@@ -68,6 +68,17 @@ namespace WinWipeHelper
             public string Target;
             public string Arguments;
             public string Url;          // for .url files (and steam:// links)
+            public string Icon;         // "path,index" when the shortcut sets its own icon
+        }
+
+        /// <summary>Where a shortcut's icon comes from: its own icon setting, else its target. Null if neither exists.</summary>
+        public static string LinkIcon(string path)
+        {
+            var info = ReadLink(path);
+            if (info == null) return null;
+            var (iconPath, _) = AppIcons.ParseIconLocation(info.Icon);
+            if (iconPath != null && File.Exists(iconPath)) return info.Icon;
+            return !string.IsNullOrEmpty(info.Target) && File.Exists(info.Target) ? info.Target : null;
         }
 
         /// <summary>Reads a .lnk or .url without resolving (so a missing target stays visible as missing).</summary>
@@ -77,10 +88,15 @@ namespace WinWipeHelper
             {
                 if (path.EndsWith(".url", StringComparison.OrdinalIgnoreCase))
                 {
+                    var url = new LinkInfo();
                     foreach (var line in File.ReadAllLines(path))
-                        if (line.StartsWith("URL=", StringComparison.OrdinalIgnoreCase))
-                            return new LinkInfo { Url = line.Substring(4).Trim() };
-                    return new LinkInfo();
+                    {
+                        if (line.StartsWith("URL=", StringComparison.OrdinalIgnoreCase) && url.Url == null) url.Url = line.Substring(4).Trim();
+                        else if (line.StartsWith("IconFile=", StringComparison.OrdinalIgnoreCase)) url.Icon = line.Substring(9).Trim() + (url.Icon ?? "");
+                        else if (line.StartsWith("IconIndex=", StringComparison.OrdinalIgnoreCase)) url.Icon = (url.Icon ?? "") + "," + line.Substring(10).Trim();
+                    }
+                    if (url.Icon != null && url.Icon.StartsWith(",")) url.Icon = null;
+                    return url;
                 }
                 var link = (IShellLinkW)new ShellLinkCoClass();
                 try
@@ -91,7 +107,15 @@ namespace WinWipeHelper
                     var target = Environment.ExpandEnvironmentVariables(sb.ToString());
                     var args = new StringBuilder(2048);
                     try { link.GetArguments(args, args.Capacity); } catch { }
-                    return new LinkInfo { Target = target, Arguments = args.ToString() };
+                    string icon = null;
+                    try
+                    {
+                        var ib = new StringBuilder(1024);
+                        link.GetIconLocation(ib, ib.Capacity, out var index);
+                        if (ib.Length > 0) icon = Environment.ExpandEnvironmentVariables(ib.ToString()) + "," + index;
+                    }
+                    catch { }
+                    return new LinkInfo { Target = target, Arguments = args.ToString(), Icon = icon };
                 }
                 finally { Marshal.FinalReleaseComObject(link); }
             }

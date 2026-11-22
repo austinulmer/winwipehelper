@@ -612,7 +612,7 @@ namespace WinWipeHelper
                 if (list.Apps.Any(a => a.Id.Equals(id, StringComparison.OrdinalIgnoreCase))) continue;
                 list.Apps.Add(new AppItem
                 {
-                    Id = id, Name = i.Name, Category = CatName(i), Default = true, User = i.PerUser, Kind = AppKind.Winget,
+                    Id = id, Name = i.Name, Category = CatName(i), Default = true, User = i.PerUser, Kind = AppKind.Winget, Homepage = i.Homepage,
                     Note = "Found in: " + i.Sources + (i.PerUser ? ". Installed per-user, so it installs as your normal user." : ""),
                 });
             }
