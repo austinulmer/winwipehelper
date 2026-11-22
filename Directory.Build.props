@@ -22,8 +22,8 @@
     <ApplicationManifest>$(MSBuildThisFileDirectory)src\Core\app.manifest</ApplicationManifest>
     <ApplicationIcon>$(MSBuildThisFileDirectory)src\Core\app.ico</ApplicationIcon>
 
-    <Version>0.1.0</Version>
-    <FileVersion>0.1.0.0</FileVersion>
+    <Version>0.2.0</Version>
+    <FileVersion>0.2.0.0</FileVersion>
     <Company>WinWipeHelper</Company>
     <Copyright>MIT License</Copyright>
     <NeutralLanguage>en-US</NeutralLanguage>
