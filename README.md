@@ -7,6 +7,10 @@ A small Windows program for reinstalling Windows without losing a day to it:
 
 It's one `.exe` and needs **nothing installed**: it runs on any Windows 10 (1903 or newer) or Windows 11 PC.
 
+![Install apps: tick what you want, and it installs silently](docs/images/install.png)
+
+**New here?** Follow the step-by-step [guide to reinstalling Windows](docs/GUIDE.md). Questions? See the [FAQ](docs/FAQ.md).
+
 ## Download
 
 Get `WinWipeHelper.exe` from the [Releases](../../releases) page and put it on a USB stick or a second drive.
@@ -90,6 +94,8 @@ The built-in list is a starter set of popular apps, all unticked except 7-Zip an
 The scan then merges duplicates and matches each program to winget, first through winget itself and then with a careful `winget search`. It sorts items into apps, runtimes, drivers, games, Windows components and leftovers, which are entries pointing at files that no longer exist. You review everything: tick or untick items, and fix any winget ID the scan wasn't sure about (those rows are yellow). Then save the result as `apps.json`. The scan doesn't need admin. It asks only if you want other users' profiles included.
 
 ## Back up / restore files
+
+![Back up / restore files](docs/images/backup.png)
 
 - Tick whole folders or individual files. **Add another folder...** adds any folder, and **Calculate size** shows how much will be saved.
 - **Saved selections**: name a selection and load it again next time. Your last selection is remembered too.
