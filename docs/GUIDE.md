@@ -19,6 +19,8 @@ Copy `WinWipeHelper.exe` to the USB stick or second drive that will survive the 
 
 The first time, Windows may show **"Windows protected your PC"**. Click **More info**, then **Run anyway**. [Why does this happen?](FAQ.md#why-does-windows-say-it-protected-my-pc)
 
+WinWipeHelper then asks once whether it may download app icons from the apps' websites. Either answer is fine: it only changes the little icons next to app names.
+
 ### 2. Make your app list
 
 Open the **Install apps** tab. You can build the list two ways:

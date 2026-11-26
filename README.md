@@ -22,7 +22,7 @@ The EXE isn't code-signed (certificates cost money every year), so the first tim
 1. Click **More info**.
 2. Click **Run anyway**.
 
-Windows remembers this for that file. If you'd rather not trust a download, build it yourself (see [Building](#building)); it takes about a minute.
+Windows remembers this for that file. Free code signing has been applied for (see [Code signing policy](#code-signing-policy)). If you'd rather not trust a download, build it yourself (see [Building](#building)); it takes about a minute.
 
 ## Install apps
 
@@ -35,7 +35,7 @@ Windows remembers this for that file. If you'd rather not trust a download, buil
 - **Microsoft Office**: choose the license type (Microsoft 365 Personal/Family, Business, Apps for enterprise, Office 2024 Home, Office 2024 Home & Business) and which apps you want. It installs through Microsoft's **Office Deployment Tool**, and you activate by signing in to Office.
 - **No winget yet?** On a fresh PC (or Windows Sandbox) WinWipeHelper repairs or installs winget itself, **without the Microsoft Store**. First it re-registers the App Installer that ships with Windows. If that doesn't work, it downloads App Installer from Microsoft's official [winget-cli releases](https://github.com/microsoft/winget-cli/releases) and checks the signatures first.
 - At the end you get a summary and a page of links for things that can't be automated, such as graphics drivers.
-- **Icons** next to each app: apps that are already installed show their own icon. For the others, WinWipeHelper downloads the icon from the app's own website (its `homepage`; for GitHub projects, the owner's avatar) and keeps it in `%LOCALAPPDATA%\WinWipeHelper\icons`, so each site is asked only once. Untick **Icons from app websites** to never go online for icons; apps without an icon get a colored letter instead.
+- **Icons** next to each app: apps that are already installed show their own icon. The first time you start WinWipeHelper, it asks whether it may download icons for the other apps. If you say yes, it downloads each icon from the app's own website (its `homepage`; for GitHub projects, the owner's avatar) and keeps it in `%LOCALAPPDATA%\WinWipeHelper\icons`, so each site is asked only once. If you say no, nothing goes online for icons and those apps get a colored letter. **Icons from app websites** changes your answer later.
 
 ### Your own app list (`apps.json`)
 
@@ -105,6 +105,23 @@ The scan then merges duplicates and matches each program to winget, first throug
 - The zip goes next to the EXE if that's not on C:, otherwise to the non-C: drive with the most free space (D: preferred), in a `PC Backups` folder. WinWipeHelper warns you if the destination is on C:, which gets wiped.
 - **Restore** finds your newest `Files-Backup-*.zip` and shows each folder with where it will go. If a file already exists, you choose: **Skip**, **Overwrite** or **Keep both**. Modified dates are kept.
 - Backups and restores run as you, not as admin, so restored files belong to you.
+
+## Privacy
+
+This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it.
+
+In practice, WinWipeHelper goes online only for what you start: installing apps (through winget, or from the download address listed for an item), repairing winget, and, if you agreed at first start, downloading app icons from the apps' own websites. There's no account, no tracking and no telemetry. Backups and restores never go online.
+
+## Code signing policy
+
+> **Status:** applied for. Releases are unsigned until SignPath Foundation approves the project.
+
+Free code signing provided by [SignPath.io](https://about.signpath.io/), certificate by [SignPath Foundation](https://signpath.org/).
+
+- **Committers and reviewers:** the owner of this repository
+- **Approvers:** the owner of this repository
+
+Only release builds made by GitHub Actions from this repository's source code are signed, and each signing request is approved by hand.
 
 ## Logs
 

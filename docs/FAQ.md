@@ -32,7 +32,7 @@
 
 ### Why does Windows say it "protected my PC"?
 
-The EXE isn't code-signed, because signing certificates cost money every year. Windows SmartScreen warns about any unsigned program it hasn't seen often. Click **More info**, then **Run anyway**. Windows remembers your choice for that file.
+The EXE isn't code-signed yet: signing certificates cost money every year, and free signing for open-source projects has been applied for. Windows SmartScreen warns about any unsigned program it hasn't seen often. Click **More info**, then **Run anyway**. Windows remembers your choice for that file.
 
 If you'd rather not trust a download, you can build the EXE yourself from this source code; see [Building](../README.md#building).
 
@@ -122,7 +122,7 @@ Only to do what you ask:
 
 - winget downloads apps from their vendors, and download-only items come from their listed URLs. Items that point at a GitHub project ask GitHub for that project's newest release.
 - If winget needs repairing, WinWipeHelper downloads it from Microsoft's GitHub releases.
-- **App icons:** for apps that aren't installed yet, it downloads the icon from the app's own website, once per site. Untick **Icons from app websites** to turn this off.
+- **App icons:** the first time it starts, WinWipeHelper asks whether it may download icons. Only if you say yes does it download the icon of each app that isn't installed yet from the app's own website, once per site. **Icons from app websites** changes your answer later.
 
 There's no tracking, no account and no telemetry. Backups and restores never go online.
 

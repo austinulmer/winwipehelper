@@ -7,8 +7,11 @@ namespace WinWipeHelper
     /// <summary>Small preferences kept in settings.json (next to the EXE, or in %LOCALAPPDATA%\WinWipeHelper).</summary>
     public sealed class Settings
     {
-        /// <summary>Download the icon from an app's own website when the app isn't installed.</summary>
-        [JsonAlways] public bool WebIcons = true;
+        /// <summary>Download the icon from an app's own website when the app isn't installed. Off until the user says yes.</summary>
+        [JsonAlways] public bool WebIcons;
+
+        /// <summary>The user has answered the first-run question about website icons.</summary>
+        [JsonAlways] public bool WebIconsAsked;
 
         public static string FilePath => Path.Combine(Paths.DataDir, "settings.json");
 

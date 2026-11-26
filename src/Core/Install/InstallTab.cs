@@ -84,6 +84,23 @@ namespace WinWipeHelper
             _list = Catalog.LoadStartup(out _source, out var warning);
             ApplyList(_list, _source);
             if (warning != null) HandleCreated += (s, e) => BeginInvoke((Action)(() => Ui.Warn(FindForm(), warning)));
+            if (!Settings.Current.WebIconsAsked) HandleCreated += (s, e) => BeginInvoke((Action)AskAboutWebIcons);
+        }
+
+        /// <summary>First run: nothing goes online for icons until the user agrees.</summary>
+        void AskAboutWebIcons()
+        {
+            if (Settings.Current.WebIconsAsked) return;
+            bool yes = Ui.Ask(FindForm(),
+                "Show app icons from the internet?\n\n" +
+                "Apps that are already installed show their own icon. For the others, WinWipeHelper can download " +
+                "the icon from each app's own website (once per site, then it's kept on this PC).\n\n" +
+                "Yes = download icons\nNo = never go online for icons (apps get a colored letter instead)\n\n" +
+                "You can change this any time with \"Icons from app websites\".");
+            Settings.Current.WebIconsAsked = true;
+            Settings.Current.WebIcons = yes;
+            Settings.Current.Save();
+            _webIcons.Checked = yes;   // when this changes the box, its handler fetches the icons
         }
 
         void ApplyList(AppList list, string source)
